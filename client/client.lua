@@ -7,7 +7,6 @@ RegisterNUICallback("npwd:esx-garage:getVehicles", function(_, cb)
 end)
 
 RegisterNUICallback("npwd:esx-garage:requestWaypoint", function(data, cb)
-	print("nui data", json.encode(data))
 	local garage_name = data.parking
 	local vehicle_type = data.type
 
@@ -33,7 +32,6 @@ function GetClosestGarage(garages)
 	local closestPos
 	for _, v in ipairs(garages) do
 		local distance = #(player_coords - v.GaragePos)
-		print("distance", distance)
 
 		if closestDistance == -1 or distance < closestDistance then
 			closestDistance = distance
