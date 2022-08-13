@@ -11,6 +11,7 @@ import { RecoilRoot } from 'recoil';
 import { IPhoneSettings } from '@project-error/npwd-types';
 import i18next from 'i18next';
 import { createTheme } from '@mui/material';
+import { theme } from "./app.theme";
 
 const Container = styled.div`
   position: relative;
@@ -53,11 +54,7 @@ const settings = {
 	},
 } as IPhoneSettings;
 
-const theme = createTheme({
-	palette: {
-		mode: 'light',
-	},
-});
+const appTheme = createTheme(theme);
 
 /*
  *   Providers loaded here will only be applied to the development environment.
@@ -77,7 +74,7 @@ const Root = () => {
 					<Container>
 						<Background src={image}/>
 						<AppContainer>
-							<App settings={settings} i18n={i18next} theme={theme}/>
+							<App settings={settings} i18n={i18next} theme={appTheme}/>
 						</AppContainer>
 					</Container>
 				</NuiProvider>

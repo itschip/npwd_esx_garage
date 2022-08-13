@@ -15,6 +15,7 @@ delete deps['@emotion/react'];
 delete deps['@emotion/styled'];
 delete deps['@mui/material'];
 delete deps['@mui/styles'];
+delete deps['@mui/icons-material'];
 
 module.exports = {
   entry: './src/bootstrap.ts',
@@ -57,8 +58,11 @@ module.exports = {
     clean: true,
   },
   plugins: [
+    new webpack.DefinePlugin({
+      process: { env: {} },
+    }),
     new ModuleFederationPlugin({
-      name: 'template',
+      name: 'npwd_esx_garage',
       filename: 'remoteEntry.js',
       exposes: {
         './config': './npwd.config',

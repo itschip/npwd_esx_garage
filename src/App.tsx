@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { NUIContext, NuiContext, NuiProvider, useNuiEvent } from 'react-fivem-hooks';
-import { Link, useHistory } from 'react-router-dom';
+import { NuiProvider } from 'react-fivem-hooks';
+import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
+import { Header } from './styles/header.styles';
 
 import { IPhoneSettings } from '@project-error/npwd-types';
 import { i18n } from 'i18next';
-import { Theme } from '@mui/material';
+import { IconButton, Theme, StyledEngineProvider, ThemeProvider, Typography } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
+import { GarageItem } from './types/garage';
+import fetchNui from './utils/fetchNui';
+import { ServerPromiseResp } from './types/common';
+import { VehicleList } from './VehicleList';
 
-const Container = styled.div<{ isDarkMode: boolean }>`
+const Container = styled.div<{ isDarkMode: any }>`
   flex: 1;
   padding: 1.5rem;
   display: flex;
@@ -15,24 +21,12 @@ const Container = styled.div<{ isDarkMode: boolean }>`
   flex-direction: column;
   max-height: 100%;
   background-color: #fafafa;
-  color: #212121;
 
   ${({ isDarkMode }) =>
     isDarkMode &&
     `
     background-color: #212121;
-    color: #fafafa;
   `}
-`;
-
-const LinkItem = styled(Link)<{ isDarkMode: boolean }>`
-  font-family: sans-serif;
-  text-decoration: none;
-  color: ${({ isDarkMode }) => (isDarkMode ? '#fafafa' : '#222')};
-`;
-
-const Footer = styled.footer`
-  margin-top: auto;
 `;
 
 interface AppProps {
@@ -43,34 +37,48 @@ interface AppProps {
 
 const App = (props: AppProps) => {
   const history = useHistory();
-  const [count, setCount] = useState(0);
-  const { data } = useNuiEvent<string>({ event: 'RANDOM' });
+  const [vehicles, setVehicles] = useState<GarageItem[] | undefined>([]);
+  const [mappedVeh, setMappedVeh] = useState<any>(null);
 
-  const isDarkMode = props.theme.palette.mode === 'dark';
+  const isDarkMode = props.theme && props.theme.palette.mode === 'dark';
+
+  useEffect(() => {
+    fetchNui<ServerPromiseResp<GarageItem[]>>('npwd:esx-garage:getVehicles').then((resp) => {
+      setVehicles(resp.data);
+    });
+  }, []);
+
+  console.log('theme', props.theme);
+
+  useEffect(() => {
+    if (vehicles) {
+      console.log(vehicles);
+      const mappedVehicles = vehicles?.reduce((vehs: any, vehicle: any) => {
+        if (!vehs[vehicle.type]) vehs[vehicle.type] = [];
+        vehs[vehicle.type].push(vehicle);
+        return vehs;
+      }, {});
+
+      setMappedVeh(mappedVehicles);
+    }
+  }, [vehicles]);
 
   return (
-    <Container isDarkMode={isDarkMode}>
-      <button onClick={() => history.push('/')} style={{ alignSelf: 'flex-start' }}>
-        Back
-      </button>
-      <h1>App title</h1>
-
-      <h2>Data from client: {data}</h2>
-
-      <p>Language is: {props.settings.language.label}</p>
-
-      <div>
-        <button onClick={() => setCount((prev) => prev + 1)}>+</button>
-        <button>{count}</button>
-        <button onClick={() => setCount((prev) => prev - 1)}>-</button>
-      </div>
-
-      <Footer>
-        <LinkItem to="/" isDarkMode={isDarkMode}>
-          Home
-        </LinkItem>
-      </Footer>
-    </Container>
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={props.theme}>
+        <Container isDarkMode={isDarkMode}>
+          <Header>
+            <IconButton color="primary" onClick={() => history.goBack()}>
+              <ArrowBack />
+            </IconButton>
+            <Typography fontSize={24} color="primary" fontWeight="bold">
+              Garage
+            </Typography>
+          </Header>
+          {mappedVeh && <VehicleList isDarkMode={isDarkMode} vehicles={mappedVeh} />}
+        </Container>
+      </ThemeProvider>
+    </StyledEngineProvider>
   );
 };
 
